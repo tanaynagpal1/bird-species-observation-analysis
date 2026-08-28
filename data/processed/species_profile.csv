@@ -1,0 +1,116 @@
+Scientific_Name,Common_Name,AOU_Code,is_at_risk,forest_sightings,grassland_sightings,total_sightings,grassland_share_pct,well_sampled,specialist_class
+Cardinalis cardinalis,Northern Cardinal,NOCA,False,133,530,663,79.9,True,Generalist
+Passerina cyanea,Indigo Bunting,INBU,False,58,461,519,88.8,True,Generalist
+Thryothorus ludovicianus,Carolina Wren,CARW,False,145,347,492,70.5,True,Generalist
+Spizella pusilla,Field Sparrow,FISP,False,29,456,485,94.0,True,Grassland specialist
+Spizella passerina,Chipping Sparrow,CHSP,False,21,353,374,94.4,True,Grassland specialist
+Ammodramus savannarum,Grasshopper Sparrow,GRSP,False,5,346,351,98.6,True,Grassland specialist
+Carduelis tristis,American Goldfinch,AMGO,False,0,310,310,100.0,True,Grassland specialist
+Agelaius phoeniceus,Red-winged Blackbird,RWBL,False,8,273,281,97.2,True,Grassland specialist
+Baeolophus bicolor,Eastern Tufted Titmouse,ETTI,False,93,179,272,65.8,True,Generalist
+Turdus migratorius,American Robin,AMRO,False,59,176,235,74.9,True,Generalist
+Zenaida macroura,Mourning Dove,MODO,False,32,197,229,86.0,True,Generalist
+Melospiza melodia,Song Sparrow,SOSP,False,6,222,228,97.4,True,Grassland specialist
+Molothrus ater,Brown-headed Cowbird,BHCO,False,32,193,225,85.8,True,Generalist
+Pipilo erythrophthalmus,Eastern Towhee,EATO,False,39,159,198,80.3,True,Generalist
+Contopus virens,Eastern Wood-Pewee,EAWP,False,97,88,185,47.6,True,Generalist
+Sturnella magna,Eastern Meadowlark,EAME,False,6,170,176,96.6,True,Grassland specialist
+Corvus brachyrhynchos,American Crow,AMCR,False,39,137,176,77.8,True,Generalist
+Sialia sialis,Eastern Bluebird,EABL,False,6,167,173,96.5,True,Grassland specialist
+Melanerpes carolinus,Red-bellied Woodpecker,RBWO,False,68,91,159,57.2,True,Generalist
+Cyanocitta cristata,Blue Jay,BLJA,False,31,119,150,79.3,True,Generalist
+Poecile carolinensis,Carolina Chickadee,CACH,False,53,93,146,63.7,True,Generalist
+Polioptila caerulea,Blue-gray Gnatcatcher,BGGN,False,47,94,141,66.7,True,Generalist
+Mimus polyglottos,Northern Mockingbird,NOMO,False,6,130,136,95.6,True,Grassland specialist
+Hirundo rustica,Barn Swallow,BARS,False,2,130,132,98.5,True,Grassland specialist
+Vireo olivaceus,Red-eyed Vireo,REVI,False,80,44,124,35.5,True,Generalist
+Quiscalus quiscula,Common Grackle,COGR,False,15,107,122,87.7,True,Generalist
+Geothlypis trichas,Common Yellowthroat,COYE,False,12,101,113,89.4,True,Generalist
+Myiarchus crinitus,Great Crested Flycatcher,GCFL,False,38,68,106,64.2,True,Generalist
+Picoides pubescens,Downy Woodpecker,DOWO,False,44,52,96,54.2,True,Generalist
+Dumetella carolinensis,Gray Catbird,GRCA,False,10,73,83,88.0,True,Generalist
+Sturnus vulgaris,European Starling,EUST,False,1,81,82,98.8,True,Grassland specialist
+Bombycilla cedrorum,Cedar Waxwing,CEDW,False,15,62,77,80.5,True,Generalist
+Hylocichla mustelina,Wood Thrush,WOTH,True,48,19,67,28.4,True,Generalist
+Empidonax virescens,Acadian Flycatcher,ACFL,False,38,26,64,40.6,True,Generalist
+Coccyzus americanus,Yellow-billed Cuckoo,YBCU,False,19,43,62,69.4,True,Generalist
+Troglodytes aedon,House Wren,HOWR,False,5,53,58,91.4,True,Grassland specialist
+Sitta carolinensis,White-breasted Nuthatch,WBNU,False,30,25,55,45.5,True,Generalist
+Tyrannus tyrannus,Eastern Kingbird,EAKI,False,1,50,51,98.0,True,Grassland specialist
+Tachycineta bicolor,Tree Swallow,TRES,False,0,49,49,100.0,True,Grassland specialist
+Piranga olivacea,Scarlet Tanager,SCTA,False,31,17,48,35.4,True,Generalist
+Cathartes aura,Turkey Vulture,TUVU,False,5,41,46,89.1,True,Generalist
+Icterus galbula,Baltimore Oriole,BAOR,False,4,41,45,91.1,True,Grassland specialist
+Spinus tristis,American Goldfinch,AMGO,False,38,0,38,0.0,True,Forest specialist
+Vireo gilvus,Warbling Vireo,WAVI,False,1,33,34,97.1,True,Grassland specialist
+Dryocopus pileatus,Pileated Woodpecker,PIWO,False,18,12,30,40.0,True,Generalist
+Corvus ossifragus,Fish Crow,FICR,False,2,28,30,93.3,True,Grassland specialist
+Haemorhous mexicanus,House Finch,HOFI,False,5,19,24,79.2,True,Generalist
+Setophaga discolor,Prairie Warbler,PRAW,True,6,18,24,75.0,True,Generalist
+Stelgidopteryx serripennis,Northern Rough-winged Swallow,NRWS,False,1,20,21,95.2,True,Grassland specialist
+Eremophila alpestris,Horned Lark,HOLA,False,1,18,19,94.7,False,Insufficient data
+Picoides villosus,Hairy Woodpecker,HAWO,False,6,12,18,66.7,False,Insufficient data
+Sayornis phoebe,Eastern Phoebe,EAPH,False,3,15,18,83.3,False,Insufficient data
+Poecile,Unidentified Chickadee,UNCH,False,5,13,18,72.2,False,Insufficient data
+Setophaga striata,Blackpoll Warbler,BLPW,False,4,13,17,76.5,False,Insufficient data
+Corvus,Unidentified Crow,UNCR,False,0,16,16,100.0,False,Insufficient data
+Guiraca caerulea,Blue Grosbeak,BLGR,False,0,15,15,100.0,False,Insufficient data
+Setophaga americana,Northern Parula,NOPA,False,6,9,15,60.0,False,Insufficient data
+Toxostoma rufum,Brown Thrasher,BRTH,False,0,15,15,100.0,False,Insufficient data
+Setophaga ruticilla,American Redstart,AMRE,False,8,7,15,46.7,False,Insufficient data
+Icterus spurius,Orchard Oriole,OROR,False,1,14,15,93.3,False,Insufficient data
+Colaptes auratus,Northern Flicker,NOFL,False,1,13,14,92.9,False,Insufficient data
+Chaetura pelagica,Chimney Swift,CHSW,False,0,13,13,100.0,False,Insufficient data
+Charadrius vociferus,Killdeer,KILL,False,0,13,13,100.0,False,Insufficient data
+Setophaga pinus,Pine Warbler,PIWA,False,5,8,13,61.5,False,Insufficient data
+Seiurus aurocapillus,Ovenbird,OVEN,False,12,1,13,7.7,False,Insufficient data
+Buteo lineatus,Red-shouldered Hawk,RSHA,False,2,10,12,83.3,False,Insufficient data
+Branta canadensis,Canada Goose,CANG,False,0,12,12,100.0,False,Insufficient data
+Vireo flavifrons,Yellow-throated Vireo,YTVI,False,7,3,10,30.0,False,Insufficient data
+Catharus ustulatus,Swainson's Thrush,SWTH,False,8,1,9,11.1,False,Insufficient data
+Ardea herodias,Great Blue Heron,GBHE,False,0,9,9,100.0,False,Insufficient data
+Setophaga petechia,Yellow Warbler,YEWA,False,2,6,8,75.0,False,Insufficient data
+Passer domesticus,House Sparrow,HOSP,False,0,7,7,100.0,False,Insufficient data
+Meleagris gallopavo,Wild Turkey,WITU,False,5,2,7,28.6,False,Insufficient data
+Icteria virens,Yellow-breasted Chat,YBCH,False,2,5,7,71.4,False,Insufficient data
+Falco sparverius,American Kestrel,AMKE,False,0,7,7,100.0,False,Insufficient data
+Dolichonyx oryzivorus,Bobolink,BOBO,False,0,6,6,100.0,False,Insufficient data
+Buteo jamaicensis,Red-tailed Hawk,RTHA,False,0,6,6,100.0,False,Insufficient data
+Setophaga caerulescens,Black-throated Blue Warbler,BTBW,False,5,0,5,0.0,False,Insufficient data
+Progne subis,Purple Martin,PUMA,False,0,5,5,100.0,False,Insufficient data
+Haliaeetus leucocephalus,Bald Eagle,BAEA,False,0,5,5,100.0,False,Insufficient data
+Hirundinidae,Unidentified Swallow,UNSW,False,0,5,5,100.0,False,Insufficient data
+Helmitheros vermivorus,Worm-eating Warbler,WEWA,True,4,0,4,0.0,False,Insufficient data
+Columba livia,Rock Dove,RODO,False,0,4,4,100.0,False,Insufficient data
+Vireo griseus,White-eyed Vireo,WEVI,False,3,1,4,25.0,False,Insufficient data
+Setophaga virens,Black-throated Green Warbler,BTNW,False,3,1,4,25.0,False,Insufficient data
+Catharus fuscescens,Veery,VEER,False,1,2,3,66.7,False,Insufficient data
+Coragyps atratus,Black Vulture,BLVU,False,0,3,3,100.0,False,Insufficient data
+Setophaga coronata,Yellow-rumped Warbler,YRWA,False,3,0,3,0.0,False,Insufficient data
+Strix varia,Barred Owl,BADO,False,1,2,3,66.7,False,Insufficient data
+Setophaga tigrina,Cape May Warbler,CMWA,False,2,1,3,33.3,False,Insufficient data
+Parkesia motacilla,Louisiana Waterthrush,LOWA,False,2,0,2,0.0,False,Insufficient data
+Archilochus colubris,Ruby-throated Hummingbird,RTHU,False,0,2,2,100.0,False,Insufficient data
+Accipiter cooperii,Cooper's Hawk,COHA,False,0,2,2,100.0,False,Insufficient data
+Pooecetes gramineus,Vesper Sparrow,VESP,False,0,2,2,100.0,False,Insufficient data
+Setophaga castanea,Bay-breasted Warbler,BBWA,False,1,1,2,50.0,False,Insufficient data
+Setophaga magnolia,Magnolia Warbler,MAWA,False,1,1,2,50.0,False,Insufficient data
+Junco hyemalis,Dark-eyed Junco,DEJU,False,2,0,2,0.0,False,Insufficient data
+Empidonax traillii,Willow Flycatcher,WIFL,True,0,2,2,100.0,False,Insufficient data
+Aix sponsa,Wood Duck,WODU,False,0,1,1,100.0,False,Insufficient data
+Falco peregrinus,Peregrine Falcon,PEFA,False,1,0,1,0.0,False,Insufficient data
+Empidonax minimus,Least Flycatcher,LEFL,False,0,1,1,100.0,False,Insufficient data
+Corvus caurinus,Northwestern Crow,NOCR,False,0,1,1,100.0,False,Insufficient data
+Ceryle alcyon,Belted Kingfisher,BEKI,False,0,1,1,100.0,False,Insufficient data
+Ardeola bacchus,Chinese Pond-Heron,CHPH,False,0,1,1,100.0,False,Insufficient data
+Parkesia noveboracensis,Northern Waterthrush,NOWA,False,0,1,1,100.0,False,Insufficient data
+Passerculus sandwichensis,Savannah Sparrow,SASP,False,0,1,1,100.0,False,Insufficient data
+Picadae,Unidentified Woodpecker,UNWO,False,1,0,1,0.0,False,Insufficient data
+Piranga rubra,Summer Tanager,SUTA,False,0,1,1,100.0,False,Insufficient data
+Melospiza georgiana,Swamp Sparrow,SWSP,False,0,1,1,100.0,False,Insufficient data
+Mniotilta varia,Black-and-white Warbler,BAWW,False,0,1,1,100.0,False,Insufficient data
+Oporornis formosus,Kentucky Warbler,KEWA,True,0,1,1,100.0,False,Insufficient data
+Parulidae,Unidentified Warbler,UNWA,False,0,1,1,100.0,False,Insufficient data
+Setophaga pensylvanica,Chestnut-sided Warbler,CSWA,False,0,1,1,100.0,False,Insufficient data
+Tyrannidae,Unidentified Flycatcher,UNFL,False,0,1,1,100.0,False,Insufficient data
+Zonotrichia albicollis,White-throated Sparrow,WTSP,False,0,1,1,100.0,False,Insufficient data
