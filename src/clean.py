@@ -161,8 +161,8 @@ def cast_types(grassland: pd.DataFrame, log: CleaningLog) -> pd.DataFrame:
     Temperature really was the float 20.0 - but pandas had labelled every
     grassland column as the generic `object` type because of how the sheets
     were read. Left alone, concatenation would downgrade the combined columns
-    to `object` as well, which quietly breaks filtering, sorting and the SQL
-    export later.
+    to `object` as well, which quietly breaks filtering, sorting and any
+    numeric comparison later.
     """
     log.section("Data types")
 
@@ -195,7 +195,8 @@ def cast_types(grassland: pd.DataFrame, log: CleaningLog) -> pd.DataFrame:
         f"Grassland columns had all been read as the generic `object` type even though "
         f"the underlying values were correct. Cast {len(numeric_int)} to integer, "
         f"{len(numeric_float)} to float, {len(boolean)} to boolean and `Date` to datetime "
-        f"so the combined dataset supports arithmetic, sorting and a clean SQL export.",
+        f"so the combined dataset supports arithmetic, comparison, sorting and grouping. "
+        f"Left as `object`, a filter such as `Temperature > 25` is not reliable.",
     )
     log.note("\nColumn types before and after:\n")
     log.table(

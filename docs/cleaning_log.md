@@ -2,7 +2,7 @@
 
 Bird Species Observation Analysis
 
-Generated automatically by `src/clean.py` on 28 August 2026 at 16:41.
+Generated automatically by `src/clean.py` on 28 August 2026 at 17:15.
 
 Every decision below was investigated before being applied - the reasoning for each is recorded in the project blueprint. Decision numbers in brackets refer to that document.
 
@@ -36,7 +36,7 @@ Forest-only field naming the survey site between park and plot (70 distinct site
 
 **Decision #9** - Cast grassland columns to their proper types
 
-Grassland columns had all been read as the generic `object` type even though the underlying values were correct. Cast 2 to integer, 4 to float, 4 to boolean and `Date` to datetime so the combined dataset supports arithmetic, sorting and a clean SQL export.
+Grassland columns had all been read as the generic `object` type even though the underlying values were correct. Cast 2 to integer, 4 to float, 4 to boolean and `Date` to datetime so the combined dataset supports arithmetic, comparison, sorting and grouping. Left as `object`, a filter such as `Temperature > 25` is not reliable.
 
 
 Column types before and after:

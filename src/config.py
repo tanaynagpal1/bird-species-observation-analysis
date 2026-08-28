@@ -24,14 +24,12 @@ ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = ROOT / "data" / "raw"
 PROCESSED_DIR = ROOT / "data" / "processed"
 REFERENCE_DIR = ROOT / "data" / "reference"
-SQL_DIR = ROOT / "sql"
 DOCS_DIR = ROOT / "docs"
 
 FOREST_XLSX = RAW_DIR / "bird_monitoring_data_forest.xlsx"
 GRASSLAND_XLSX = RAW_DIR / "bird_monitoring_data_grassland.xlsx"
 
 CLEAN_CSV = PROCESSED_DIR / "birds_clean.csv"
-DB_PATH = PROCESSED_DIR / "birds.db"
 PARK_COORDS_CSV = REFERENCE_DIR / "park_coordinates.csv"
 CLEANING_LOG = DOCS_DIR / "cleaning_log.md"
 
