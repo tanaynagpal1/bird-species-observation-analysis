@@ -1,0 +1,9 @@
+# Normalise line endings so Windows (CRLF) and the Linux deploy host (LF)
+# do not produce spurious diffs or break shell scripts.
+* text=auto eol=lf
+
+# Binary files must never be line-ending converted.
+*.xlsx binary
+*.db    binary
+*.png   binary
+*.pdf   binary

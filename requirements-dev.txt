@@ -1,0 +1,7 @@
+# Local development environment.
+# Installs everything in requirements.txt plus notebook tooling.
+#   pip install -r requirements-dev.txt
+
+-r requirements.txt
+
+jupyter==1.1.1

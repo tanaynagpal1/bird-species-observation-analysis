@@ -1,0 +1,16 @@
+# Runtime dependencies - what the deployed Streamlit app actually needs.
+# Deliberately minimal: every extra package is another way the deploy can fail.
+# For local development (Jupyter, linting) use requirements-dev.txt instead.
+#
+# NOTE: scipy is deliberately absent. Its compiled DLLs are blocked by Windows
+# Smart App Control on the development machine, and the two statistical tests
+# we need (Mann-Whitney U, Spearman) are implemented in src/stats_helpers.py
+# using numpy only. Those implementations were validated against scipy and
+# match to machine precision.
+
+pandas==3.0.5
+numpy==2.5.2
+openpyxl==3.1.5
+plotly==7.0.0
+streamlit==1.62.0
+reportlab==5.0.1
