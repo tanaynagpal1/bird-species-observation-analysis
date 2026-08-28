@@ -379,6 +379,58 @@ def add_distance_display(df: pd.DataFrame, log: CleaningLog) -> pd.DataFrame:
     return df
 
 
+def unify_species_names(df: pd.DataFrame, log: CleaningLog) -> pd.DataFrame:
+    """
+    Decision #14 - collapse species recorded under two scientific names.
+
+    Found during Phase 5 analysis, not during cleaning. American Goldfinch
+    appears as both `Carduelis tristis` (grassland file) and `Spinus tristis`
+    (forest file). Same bird - the AOU code is AMGO for both. The species was
+    reclassified from Carduelis to Spinus, and the two workbooks used
+    different taxonomic vintages.
+
+    Left unfixed this splits one generalist into two false "specialists", one
+    per habitat, because the split follows file boundaries exactly.
+
+    The AOU code is the authority: a stable four-letter banding code that does
+    not change when a genus is revised.
+    """
+    log.section("Species name unification")
+
+    conflicts = (
+        df.groupby("AOU_Code")["Scientific_Name"].nunique()
+        .loc[lambda s: s > 1].index.tolist()
+    )
+
+    if not conflicts:
+        log.step("Decision #14", "No species-name conflicts found",
+                 "Every AOU code maps to exactly one scientific name.")
+        return df
+
+    rows_out = []
+    for code in conflicts:
+        sub = df[df["AOU_Code"] == code]
+        counts = sub["Scientific_Name"].value_counts()
+        canonical = counts.index[0]
+        others = counts.index[1:].tolist()
+        df.loc[df["AOU_Code"] == code, "Scientific_Name"] = canonical
+        rows_out.append([code, sub["Common_Name"].iloc[0],
+                         ", ".join(others), canonical, f"{len(sub):,}"])
+
+    log.step(
+        "Decision #14",
+        f"Unified {len(conflicts)} species recorded under multiple names",
+        "The two source workbooks used different taxonomic vintages. The AOU "
+        "banding code is stable across genus revisions, so it is used as the "
+        "authority: all rows sharing an AOU code are given the scientific name "
+        "used by the majority of those rows.\n\n"
+        "Left unfixed, a species split this way appears as two separate "
+        "'specialists' - one per habitat - because the split follows file "
+        "boundaries exactly.",
+    )
+    log.table(["AOU", "Species", "Merged from", "Kept as", "Rows"], rows_out)
+    return df
+
 def document_remaining_gaps(df: pd.DataFrame, log: CleaningLog) -> None:
     """
     Decisions #5 and #8 - things deliberately left alone, and why.
@@ -463,6 +515,7 @@ def clean() -> pd.DataFrame:
     combined = deduplicate(combined, log)
     combined = standardise_sex(combined, log)
     combined = add_distance_display(combined, log)
+    combined = unify_species_names(combined, log)
     document_remaining_gaps(combined, log)
 
     if len(combined) != EXPECTED_CLEAN_ROWS:

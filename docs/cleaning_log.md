@@ -2,7 +2,7 @@
 
 Bird Species Observation Analysis
 
-Generated automatically by `src/clean.py` on 28 August 2026 at 17:15.
+Generated automatically by `src/clean.py` on 28 August 2026 at 18:45.
 
 Every decision below was investigated before being applied - the reasoning for each is recorded in the project blueprint. Decision numbers in brackets refer to that document.
 
@@ -101,6 +101,19 @@ Sex distribution after standardisation:
 
 The original column keeps its blanks so the distinction stays visible in the data. `Distance_Display` labels those rows `Flyover (n/a)` so that 689 real sightings appear as their own category in distance charts rather than being silently dropped.
 
+
+## Species name unification
+
+**Decision #14** - Unified 1 species recorded under multiple names
+
+The two source workbooks used different taxonomic vintages. The AOU banding code is stable across genus revisions, so it is used as the authority: all rows sharing an AOU code are given the scientific name used by the majority of those rows.
+
+Left unfixed, a species split this way appears as two separate 'specialists' - one per habitat - because the split follows file boundaries exactly.
+
+| AOU | Species | Merged from | Kept as | Rows |
+| --- | --- | --- | --- | --- |
+| AMGO | American Goldfinch | Spinus tristis | Carduelis tristis | 457 |
+
 **Decision #5** - Kept `Sub_Unit_Code` unchanged
 
 Blank on 95.3% of rows, but not randomly. It is populated only for NACE (684 rows), GWMP (38 rows) - administrative units that are themselves bundles of several separate parks. For a single-site park there is nothing to subdivide, so blank is the correct value.
@@ -131,6 +144,6 @@ These are too few to affect any result, and `Scientific_Name` - the species key 
 
 Columns: 30 (27 shared, plus `Site_Name` forest-only and `Distance_Display` derived).
 
-Species: 127 distinct. Parks: 11. Plots: 609.
+Species: 126 distinct. Parks: 11. Plots: 609.
 
 
