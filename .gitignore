@@ -6,20 +6,30 @@ __pycache__/
 venv/
 env/
 
-# Jupyter
-.ipynb_checkpoints/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# IDE
+# Editors / OS
 .vscode/
 .idea/
+.DS_Store
+Thumbs.db
+desktop.ini
 
-# Streamlit secrets - never commit
+# Streamlit local secrets (never commit credentials)
 .streamlit/secrets.toml
 
-# IMPORTANT: data/processed/ is deliberately NOT ignored.
-# birds_clean.csv and birds.db must be committed so the deployed
-# Streamlit app has its data. They are small enough for git.
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# Scratch
+*.log
+*.tmp
+~$*
+
+# NOTE: data/ is deliberately NOT ignored.
+# The Streamlit Cloud deployment reads data/processed/*.csv directly, so those
+# files have to be in the repo for the hosted app to start. They total about
+# 13 MB, which is well inside GitHub's limits. data/raw/*.xlsx (2 MB) is kept
+# too so the whole pipeline can be re-run from source by anyone who clones it.
+#
+# docs/*.pdf and docs/*.docx are also committed on purpose: they are the
+# deliverable, and committing them means a reader can download the report
+# without installing Python or running the generator.

@@ -1,16 +1,20 @@
-# Runtime dependencies - what the deployed Streamlit app actually needs.
-# Deliberately minimal: every extra package is another way the deploy can fail.
-# For local development (Jupyter, linting) use requirements-dev.txt instead.
+# Bird Species Observation Analysis - runtime dependencies
 #
-# NOTE: scipy is deliberately absent. Its compiled DLLs are blocked by Windows
-# Smart App Control on the development machine, and the two statistical tests
-# we need (Mann-Whitney U, Spearman) are implemented in src/stats_helpers.py
-# using numpy only. Those implementations were validated against scipy and
-# match to machine precision.
+# Version floors rather than exact pins: floors are set at the release that
+# introduced a feature this project actually calls, so `pip install -r` will
+# not downgrade a working local environment, and Streamlit Cloud is free to
+# resolve current builds.
+#
+# scipy is deliberately absent. Its compiled DLLs are blocked by Windows Smart
+# App Control on the development machine, so the two statistical tests this
+# project needs - Mann-Whitney U and Spearman's rho - are implemented in
+# src/stats_helpers.py with numpy alone and validated against scipy.stats on
+# the real project data. See the module docstring there.
 
-pandas==3.0.5
-numpy==2.5.2
-openpyxl==3.1.5
-plotly==7.0.0
-streamlit==1.62.0
-reportlab==5.0.1
+streamlit>=1.49        # st.plotly_chart(width='stretch') and on_select="rerun"
+pandas>=2.0
+numpy>=1.24
+plotly>=5.18           # go.Box(boxmean=...), selection events
+openpyxl>=3.1          # pandas.read_excel engine for the two source workbooks
+reportlab>=4.0         # PDF renderer (src/make_report.py)
+python-docx>=1.1       # Word renderer (src/make_report.py)

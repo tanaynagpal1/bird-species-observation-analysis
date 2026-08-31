@@ -4,6 +4,7 @@
 
 # Binary files must never be line-ending converted.
 *.xlsx binary
+*.docx  binary
 *.db    binary
 *.png   binary
 *.pdf   binary

@@ -6,7 +6,7 @@ the dashboard can render it directly without re-deriving anything.
 
 Why this module exists
 ----------------------
-The same twelve answers could be written inline in the Streamlit app. They are
+The same fourteen answers could be written inline in the Streamlit app. They are
 not, for one reason: the four guardrails.
 
 Two of the most natural things to do with this dataset - pooling all eleven
@@ -37,6 +37,13 @@ import pandas as pd
 
 import stats_helpers as sh
 from config import PARK_COORDS_CSV, PROCESSED_DIR, SHARED_PARKS
+
+# Q13 settings. Kept beside the other module constants rather than buried
+# as defaults, because the seed is what makes the rarefied figures
+# reproducible between runs.
+DIVERSITY_DRAWS = 200
+DIVERSITY_SEED = 42
+DIVERSITY_MIN_PAIR_SESSIONS = 5
 
 FEATURES_CSV = PROCESSED_DIR / "birds_features.csv"
 SESSIONS_CSV = PROCESSED_DIR / "sessions.csv"
@@ -114,7 +121,6 @@ def _flag_small(df: pd.DataFrame, count_col: str) -> pd.DataFrame:
     df = df.copy()
     df["reliable"] = df[count_col] >= MIN_SESSIONS_RELIABLE
     return df
-
 
 
 # ---------------------------------------------------------------- Q1 to Q4
@@ -314,7 +320,6 @@ def q4_specialists(species: pd.DataFrame) -> dict:
         "n_forest": int(counts.get("Forest specialist", 0)),
         "n_generalist": int(counts.get("Generalist", 0)),
     }
-
 
 
 # ---------------------------------------------------------------- Q5 to Q9
@@ -593,7 +598,7 @@ def q11_exclusive_species(rows: pd.DataFrame, n_draws: int = 200,
 
     Objective 2. This is the question that needed a third correction.
 
-    The raw answer inside the shared parks is 7 forest-only against 36
+    The raw answer inside the shared parks is 8 forest-only against 37
     grassland-only, which looks like a strong asymmetry. It is mostly an
     artefact: grassland has roughly four times more sessions there, so four
     times more chances to stumble on a rare bird. Around 40% of the
@@ -659,6 +664,304 @@ def q11_exclusive_species(rows: pd.DataFrame, n_draws: int = 200,
     }
 
 
+def q13_diversity(rows: pd.DataFrame) -> dict:
+    """
+    Q13 - Diversity beyond richness, and community composition.
+
+    Objective 2. Added after review noted that the project measured diversity
+    exactly one way: by counting distinct species.
+
+    Why richness alone is not enough
+    --------------------------------
+    A session with ten species - one abundant, nine seen once - scores the
+    same richness as a session with ten evenly abundant species. Those are
+    very different communities. Three standard indices distinguish them:
+
+        Shannon H'   -sum(p * ln p)      sensitive to rare species
+        Simpson 1-D  1 - sum(p^2)        sensitive to dominant species
+        Pielou J'    H' / ln(S)          evenness alone, richness divided out
+
+    All three are computed per session and then averaged, so G1 holds, and
+    the habitat comparison runs inside the shared parks only, so G2 holds.
+
+    Composition, and why it needed rarefying
+    ----------------------------------------
+    Diversity indices say how varied a community is, not whether two
+    communities contain the SAME species. For that we compare species lists
+    directly:
+
+        Jaccard      shared / total species      presence only
+        Bray-Curtis  abundance-weighted distance  0 = identical, 1 = disjoint
+
+    Both are strongly effort-sensitive - more sampling finds more species and
+    shifts the abundance profile - and the forest/grassland session counts
+    inside a park are badly unbalanced. So each comparison is rarefied to the
+    smaller group's session count and averaged over repeated draws, exactly
+    as Q11 does. It matters: un-rarefied, the between-habitat Bray-Curtis
+    figure is inflated by roughly two thirds.
+
+    The control comparison is the point
+    -----------------------------------
+    A similarity number alone means nothing without a yardstick. So the same
+    measure is computed for pairs of parks WITHIN one habitat. If habitat
+    genuinely restructures a community, between-habitat pairs should be less
+    similar than same-habitat pairs. That contrast is the finding.
+    """
+    import numpy as np
+
+    shared = _shared_only(rows)
+
+    # ---------------------------------------------- per-session indices
+    counts = (shared.groupby(["session_id", "Scientific_Name"])
+              .size().rename("n").reset_index())
+
+    def _indices(sub: pd.DataFrame) -> pd.Series:
+        n = sub["n"].to_numpy(dtype=float)
+        p = n / n.sum()
+        richness = len(n)
+        shannon = float(-(p * np.log(p)).sum())
+        return pd.Series({
+            "richness": float(richness),
+            "shannon": shannon,
+            "simpson_diversity": float(1 - (p ** 2).sum()),
+            # Evenness is undefined for a single species: ln(1) = 0.
+            "evenness": shannon / np.log(richness) if richness > 1 else np.nan,
+        })
+
+    per_session = (counts.groupby("session_id")
+                   .apply(_indices, include_groups=False).reset_index())
+    meta = shared[["session_id", "habitat", "Admin_Unit_Code"]].drop_duplicates()
+    per_session = per_session.merge(meta, on="session_id")
+
+    METRICS = ["richness", "shannon", "simpson_diversity", "evenness"]
+    by_habitat = per_session.groupby("habitat")[METRICS].mean().round(3)
+
+    tests = {}
+    for metric in METRICS:
+        f_vals = per_session.loc[per_session.habitat == "Forest", metric].dropna()
+        g_vals = per_session.loc[per_session.habitat == "Grassland", metric].dropna()
+        _, p_value = sh.mannwhitneyu(f_vals.to_numpy(), g_vals.to_numpy())
+        tests[metric] = {
+            "forest": round(float(f_vals.mean()), 3),
+            "grassland": round(float(g_vals.mean()), 3),
+            "p_value": p_value,
+            "significant": p_value < 0.05,
+            "n_forest": int(len(f_vals)),
+            "n_grassland": int(len(g_vals)),
+        }
+
+    # ---------------------------------------------- community similarity
+    def _jaccard(a: dict, b: dict) -> float:
+        A, B = set(a), set(b)
+        return len(A & B) / len(A | B) if (A | B) else float("nan")
+
+    def _bray(a: dict, b: dict) -> float:
+        keys = sorted(set(a) | set(b))
+        x = np.array([a.get(k, 0) for k in keys], dtype=float)
+        y = np.array([b.get(k, 0) for k in keys], dtype=float)
+        total = x.sum() + y.sum()
+        return float(1 - (2 * np.minimum(x, y).sum() / total)) if total else float("nan")
+
+    def _counts(df: pd.DataFrame, sessions_picked) -> dict:
+        return (df[df.session_id.isin(sessions_picked)]
+                .Scientific_Name.value_counts().to_dict())
+
+    rng = np.random.default_rng(DIVERSITY_SEED)
+
+    def _pair(a: pd.DataFrame, b: pd.DataFrame) -> tuple:
+        """Rarefied Jaccard and Bray-Curtis for one pair of groups."""
+        sess_a = a.session_id.unique()
+        sess_b = b.session_id.unique()
+        n = min(len(sess_a), len(sess_b))
+        if n < DIVERSITY_MIN_PAIR_SESSIONS:
+            return float("nan"), float("nan"), n
+        js, bs = [], []
+        for _ in range(DIVERSITY_DRAWS):
+            ca = _counts(a, rng.choice(sess_a, n, replace=False))
+            cb = _counts(b, rng.choice(sess_b, n, replace=False))
+            js.append(_jaccard(ca, cb))
+            bs.append(_bray(ca, cb))
+        return float(np.mean(js)), float(np.mean(bs)), n
+
+    between_rows, within_rows = [], []
+
+    for park, sub in shared.groupby("Admin_Unit_Code"):
+        forest = sub[sub.habitat == "Forest"]
+        grass = sub[sub.habitat == "Grassland"]
+        if forest.empty or grass.empty:
+            continue
+        j, b, n = _pair(forest, grass)
+        raw_j = _jaccard(forest.Scientific_Name.value_counts().to_dict(),
+                         grass.Scientific_Name.value_counts().to_dict())
+        raw_b = _bray(forest.Scientific_Name.value_counts().to_dict(),
+                      grass.Scientific_Name.value_counts().to_dict())
+        between_rows.append({
+            "park": park, "sessions_each": n,
+            "jaccard": round(j, 3), "bray_curtis": round(b, 3),
+            "jaccard_raw": round(raw_j, 3), "bray_curtis_raw": round(raw_b, 3),
+        })
+
+    from itertools import combinations
+    for habitat in ("Forest", "Grassland"):
+        sub = shared[shared.habitat == habitat]
+        for a_park, b_park in combinations(sorted(sub.Admin_Unit_Code.unique()), 2):
+            j, b, n = _pair(sub[sub.Admin_Unit_Code == a_park],
+                            sub[sub.Admin_Unit_Code == b_park])
+            if np.isnan(j):
+                continue
+            within_rows.append({
+                "habitat": habitat, "pair": f"{a_park} vs {b_park}",
+                "sessions_each": n,
+                "jaccard": round(j, 3), "bray_curtis": round(b, 3),
+            })
+
+    between = pd.DataFrame(between_rows)
+    within = pd.DataFrame(within_rows)
+
+    summary = {
+        "between_habitat": {
+            "jaccard": round(float(between.jaccard.mean()), 3),
+            "bray_curtis": round(float(between.bray_curtis.mean()), 3),
+            "jaccard_raw": round(float(between.jaccard_raw.mean()), 3),
+            "bray_curtis_raw": round(float(between.bray_curtis_raw.mean()), 3),
+            "n_pairs": len(between),
+        },
+        "within_habitat": {
+            "jaccard": round(float(within.jaccard.mean()), 3),
+            "bray_curtis": round(float(within.bray_curtis.mean()), 3),
+            "n_pairs": len(within),
+        },
+    }
+    summary["bray_gap"] = round(
+        summary["between_habitat"]["bray_curtis"]
+        - summary["within_habitat"]["bray_curtis"], 3)
+    summary["jaccard_gap"] = round(
+        summary["between_habitat"]["jaccard"]
+        - summary["within_habitat"]["jaccard"], 3)
+    summary["rarefaction_shrank_bray_gap_by_pct"] = round(
+        (1 - summary["bray_gap"]
+         / (summary["between_habitat"]["bray_curtis_raw"]
+            - summary["within_habitat"]["bray_curtis"])) * 100, 1)
+
+    any_diversity_significant = any(t["significant"] for t in tests.values())
+
+    return {
+        "per_session": per_session,
+        "by_habitat": by_habitat,
+        "tests": tests,
+        "metrics": METRICS,
+        "between_habitat_pairs": between,
+        "within_habitat_pairs": within,
+        "similarity": summary,
+        "any_diversity_significant": any_diversity_significant,
+        "n_draws": DIVERSITY_DRAWS,
+        "caveat": ("Diversity indices are per-session means within the shared "
+                   "parks. Similarity figures are rarefied to equal session "
+                   "counts; the un-rarefied values are kept alongside only to "
+                   "show how much effort inflated them."),
+    }
+
+
+def q14_detection(rows: pd.DataFrame) -> dict:
+    """
+    Q14 - How birds are detected, and what that explains about Q10.
+
+    Q10 established that three surveyors differ by 37% in species recorded
+    per session - the largest effect in the project. It did not explain why.
+    Two fields left unused until now do.
+
+    Detection channel
+    -----------------
+    `ID_Method` records whether each bird was identified by song, by call, or
+    by sight. If detection were mostly visual, an observer gap would suggest
+    differences in eyesight or attention. It is not: roughly six detections
+    in seven are auditory. Splitting each observer's mean species-per-session
+    by channel then locates the gap precisely, and the answer is specific -
+    the surveyor who records fewest overall is lowest on both auditory
+    channels but NOT lowest on visual detection. The observer effect is an
+    ear-training effect, not a general attentiveness effect.
+
+    That matters practically: ear-training is a fixable, teachable skill, and
+    a survey that wants to shrink its observer variance now knows where to
+    aim.
+
+    Detection interval
+    ------------------
+    `Interval_Length` records which 2.5-minute block of the count a bird was
+    first detected in. The resulting accumulation curve says whether the
+    10-minute protocol is the right length - a curve that has flattened by
+    minute 10 means the protocol is long enough, and one still climbing means
+    species are being missed.
+    """
+    METHOD_ORDER = ["Singing", "Calling", "Visualization"]
+    INTERVAL_ORDER = ["0-2.5 min", "2.5 - 5 min", "5 - 7.5 min", "7.5 - 10 min"]
+
+    method_counts = rows["ID_Method"].value_counts()
+    method_share = (method_counts / method_counts.sum() * 100).round(1)
+    auditory_pct = round(float(
+        method_share.reindex(["Singing", "Calling"]).fillna(0).sum()), 1)
+
+    # Distinct species per session, split by detection channel, per observer.
+    per = (rows.groupby(["session_id", "Observer", "ID_Method"])
+           .Scientific_Name.nunique().rename("species").reset_index())
+    by_observer = (per.pivot_table(index="Observer", columns="ID_Method",
+                                   values="species", aggfunc="mean")
+                   .reindex(columns=[m for m in METHOD_ORDER
+                                     if m in per.ID_Method.unique()])
+                   .round(2))
+
+    gaps = {}
+    for method in by_observer.columns:
+        col = by_observer[method]
+        gaps[method] = {
+            "gap": round(float(col.max() - col.min()), 2),
+            "lowest": str(col.idxmin()),
+            "highest": str(col.idxmax()),
+        }
+
+    auditory = [m for m in ("Singing", "Calling") if m in by_observer.columns]
+    visual = [m for m in ("Visualization",) if m in by_observer.columns]
+    aud_gap = round(float(sum(gaps[m]["gap"] for m in auditory)), 2)
+    vis_gap = round(float(sum(gaps[m]["gap"] for m in visual)), 2)
+
+    # Is the weakest overall observer also weakest on each channel?
+    overall_lowest = str(by_observer.sum(axis=1).idxmin())
+    lowest_on = {m: gaps[m]["lowest"] for m in by_observer.columns}
+    auditory_explains = (
+        all(lowest_on[m] == overall_lowest for m in auditory)
+        and not all(lowest_on[m] == overall_lowest for m in visual)
+    )
+
+    interval_counts = rows["Interval_Length"].value_counts().reindex(
+        [i for i in INTERVAL_ORDER if i in rows["Interval_Length"].unique()])
+    cumulative = (interval_counts.cumsum() / interval_counts.sum() * 100).round(1)
+    by_observer_interval = (
+        pd.crosstab(rows["Observer"], rows["Interval_Length"], normalize="index")
+        .mul(100).round(1)
+        .reindex(columns=[i for i in INTERVAL_ORDER
+                          if i in rows["Interval_Length"].unique()])
+    )
+
+    return {
+        "method_counts": method_counts,
+        "method_share": method_share,
+        "auditory_pct": auditory_pct,
+        "by_observer": by_observer,
+        "gaps": gaps,
+        "auditory_gap": aud_gap,
+        "visual_gap": vis_gap,
+        "overall_lowest_observer": overall_lowest,
+        "lowest_on_channel": lowest_on,
+        "auditory_explains_gap": bool(auditory_explains),
+        "interval_counts": interval_counts,
+        "interval_cumulative": cumulative,
+        "first_interval_pct": float(cumulative.iloc[0]),
+        "by_observer_interval": by_observer_interval,
+        "protocol_saturates": bool(
+            interval_counts.iloc[-1] / interval_counts.iloc[0] < 0.5),
+    }
+
+
 def q12_coverage(sessions: pd.DataFrame) -> dict:
     """
     Q12 - Survey effort by park and habitat.
@@ -714,6 +1017,8 @@ def run_all(root: Path | None = None) -> dict:
         "q10": q10_observer_disclosure(sessions),
         "q11": q11_exclusive_species(rows),
         "q12": q12_coverage(sessions),
+        "q13": q13_diversity(rows),
+        "q14": q14_detection(rows),
     }
 
 
@@ -795,4 +1100,18 @@ if __name__ == "__main__":
     print(f"    {q12['usable_sessions']:,} of {q12['total_sessions']:,} sessions "
           f"usable for habitat comparison ({q12['usable_pct']}%)")
 
-    print("\nAll twelve questions answered.")
+    q13 = r["q13"]
+    print("\nQ13 DIVERSITY BEYOND RICHNESS")
+    for m, t in q13["tests"].items():
+        flag = "significant" if t["significant"] else "ns"
+        print(f"    {m:18s} forest {t['forest']:.3f}  grassland {t['grassland']:.3f}"
+              f"  p={t['p_value']:.3g}  {flag}")
+    sim = q13["similarity"]
+    print("    community similarity, rarefied to equal session counts:")
+    print(f"      between habitats  Jaccard {sim['between_habitat']['jaccard']}"
+          f"  Bray-Curtis {sim['between_habitat']['bray_curtis']}")
+    print(f"      same habitat      Jaccard {sim['within_habitat']['jaccard']}"
+          f"  Bray-Curtis {sim['within_habitat']['bray_curtis']}")
+    print("      -> species membership barely differs; abundance structure does")
+
+    print("\nAll fourteen questions answered.")

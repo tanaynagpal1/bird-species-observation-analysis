@@ -1,105 +1,119 @@
 """
-Deployment smoke test.
+Bird Species Observation Analysis - dashboard entry point.
 
-Deliberately minimal. Its only job is to prove that the parts most likely to
-break in the cloud actually work:
+This file does four things and nothing else:
 
-  - the app can find src/ and import our modules
-  - the processed CSVs are committed and readable
-  - pandas, numpy and streamlit all load on the deploy host
-  - file paths resolve when the working directory is not what we expect
+  1. sets the page config (must be the very first Streamlit call)
+  2. injects the theme CSS
+  3. builds the sidebar - branding, the filters every page shares, the artwork
+  4. hands control to the page the user picked
 
-If this page renders the right numbers on Streamlit Cloud, every hard part of
-deployment is already solved and what remains is only adding charts.
+Each navigation item is a separate file in app/views/. They are listed in PAGES
+below; a page appears in the sidebar as soon as its file exists, so the nav grows
+as the project is built rather than breaking on a file that is not written yet.
+
+Run locally:  streamlit run app/streamlit_app.py
 """
-import sys
+from __future__ import annotations
+
 from pathlib import Path
 
 import streamlit as st
 
-# The app lives in app/, our modules live in src/. This works both locally and
-# on the deploy host, because it resolves relative to THIS file rather than to
-# whatever directory the process happens to start in.
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
+import art
+import data_access as da
+import theme
 
-import analysis  # noqa: E402
+APP_DIR = Path(__file__).resolve().parent
 
-st.set_page_config(page_title="Bird Species Observation Analysis",
-                   page_icon="🪶", layout="wide")
+# ------------------------------------------------------------------ 1. config
+st.set_page_config(
+    page_title="Bird Species Observation Analysis",
+    page_icon="🕊️",
+    layout="wide",
+    initial_sidebar_state="expanded",
+)
 
-st.title("Deployment smoke test")
-st.caption("Bird Species Observation Analysis — checking the pipeline loads before we build the dashboard.")
+# ------------------------------------------------------------------ 2. theme
+st.markdown(theme.css(), unsafe_allow_html=True)
 
+# ------------------------------------------------------------------ 3. sidebar
+# (file, title, material icon)  - order here is the order in the sidebar.
+PAGES = [
+    ("views/overview.py",    "Overview",           ":material/home:"),
+    ("views/habitat.py",     "Habitat Comparison", ":material/forest:"),
+    ("views/species.py",     "Species",            ":material/flutter_dash:"),
+    ("views/where.py",       "Where",              ":material/map:"),
+    ("views/timing.py",      "Timing",             ":material/schedule:"),
+    ("views/environment.py", "Environment",        ":material/partly_cloudy_day:"),
+    ("views/quality.py",     "Data Quality",       ":material/verified:"),
+    ("views/report.py",      "Report",             ":material/description:"),
+    ("views/conclusion.py",  "Conclusion",         ":material/lightbulb:"),
+    ("views/ask_ai.py",      "Ask AI",             ":material/smart_toy:"),
+]
 
-@st.cache_data
-def get_tables():
-    return analysis.load_tables()
+pages = [
+    st.Page(path, title=title, icon=icon, default=(i == 0))
+    for i, (path, title, icon) in enumerate(PAGES)
+    if (APP_DIR / path).exists()
+]
 
-
-try:
-    t = get_tables()
-except Exception as exc:
-    st.error("Could not load the processed data files.")
-    st.exception(exc)
+if not pages:
+    st.error("No page files found in app/views/. Nothing to show yet.")
     st.stop()
 
-st.success("Data loaded successfully.")
+nav = st.navigation(pages, position="hidden")
 
-c1, c2, c3, c4 = st.columns(4)
-c1.metric("Observations", f"{len(t['rows']):,}")
-c2.metric("Survey sessions", f"{len(t['sessions']):,}")
-c3.metric("Species", f"{t['rows'].Scientific_Name.nunique()}")
-c4.metric("Parks", f"{t['rows'].Admin_Unit_Code.nunique()}")
+with st.sidebar:
+    st.markdown(art.sidebar_header(), unsafe_allow_html=True)
 
-st.divider()
-st.subheader("Headline figures, computed live")
+    for pg in pages:
+        st.page_link(
+            pg,
+            label=pg.title,
+            icon=pg.icon,
+            disabled=(pg.url_path == nav.url_path),
+        )
 
-q1 = analysis.q1_at_risk_by_habitat(t["sessions"])
-q1b = analysis.q1b_at_risk_without_wood_thrush(t["rows"])
-q2 = analysis.q2_richness_by_habitat(t["sessions"])
-q4 = analysis.q4_specialists(t["species"])
+# --- shared filters -------------------------------------------------------
+# Built once, here, before the page runs. Every page reads st.session_state
+# ["filters"], so a park chosen on Overview is still chosen on Species.
+sess = da.sessions()
+all_parks = sorted(sess["park_name"].dropna().unique().tolist())
+all_months = ["May", "June", "July"]
 
-left, right = st.columns(2)
+with st.sidebar:
+    st.markdown("###### Filters")
 
-with left:
-    st.markdown("**At-risk species rate — the headline**")
-    st.write(
-        f"Forest **{q1['forest_pct']}%** vs Grassland **{q1['grassland_pct']}%** "
-        f"= **{q1['ratio']}x** (p = {q1['p_value']:.2e})"
+    shared_only = st.toggle(
+        "Shared parks only",
+        value=False,
+        help="Guardrail G2. Restricts to the 4 parks that were surveyed in BOTH "
+             "habitats - the only fair basis for a forest-vs-grassland comparison.",
     )
-    st.caption(
-        f"Wood Thrush alone is {q1b['wood_thrush_share_pct']}% of all at-risk "
-        f"sightings. Excluding it the ratio falls to "
-        f"{q1b['without_wood_thrush']['ratio']}x."
-    )
-    st.dataframe(q1["by_park"], use_container_width=True)
 
-with right:
-    st.markdown("**Species richness — the null result**")
-    st.write(
-        f"Pooled across 11 parks: {q2['pooled']['forest']} vs "
-        f"{q2['pooled']['grassland']} (p = {q2['pooled']['p_value']:.4f}) — "
-        f"significant, but confounded."
+    habitat = st.radio(
+        "Habitat",
+        ["Both", "Forest", "Grassland"],
+        horizontal=True,
+        label_visibility="collapsed",
     )
-    st.write(
-        f"Within the 4 shared parks: {q2['within_shared']['forest']} vs "
-        f"{q2['within_shared']['grassland']} (p = "
-        f"{q2['within_shared']['p_value']:.3f}) — no difference."
-    )
-    st.dataframe(q2["by_park"], use_container_width=True)
 
-st.divider()
-st.subheader("Habitat specialists")
-st.write(
-    f"**{q4['n_grassland']}** grassland specialists · "
-    f"**{q4['n_forest']}** forest specialists · "
-    f"**{q4['n_generalist']}** generalists"
-)
+    # Left empty on purpose - empty means "everything", which keeps the sidebar
+    # short instead of showing eleven park chips before the user has chosen
+    # anything. apply_filters() treats an empty list as no filter.
+    parks = st.multiselect("Parks", options=all_parks, placeholder="All 11 parks")
+    months = st.multiselect("Months", options=all_months, placeholder="May - July")
 
-st.divider()
-st.caption(
-    f"Python {sys.version.split()[0]} · "
-    f"pandas {__import__('pandas').__version__} · "
-    f"streamlit {st.__version__} · running from {ROOT.name}"
-)
+    st.markdown(art.sidebar_scene(), unsafe_allow_html=True)
+
+st.session_state["filters"] = {
+    "shared_only": shared_only,
+    "habitat": habitat,
+    "parks": parks or all_parks,
+    "months": months or all_months,
+    "n_parks_total": len(all_parks),
+}
+
+# ------------------------------------------------------------------ 4. run
+nav.run()
