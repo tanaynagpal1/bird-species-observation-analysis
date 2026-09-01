@@ -24,6 +24,15 @@ desktop.ini
 *.tmp
 ~$*
 
+# Bird audio for the ear test. The mp3s themselves are third-party
+# Creative Commons material, so whether to commit them is a licensing decision
+# rather than a technical one: CC BY and CC BY-NC allow it with attribution
+# (which data/audio/manifest.csv provides), so committing is fine and makes the
+# deployed app self-contained. Delete the two lines below if you would rather
+# keep the repo slim and have each user run `python src/fetch_audio.py`.
+# data/audio/*.mp3
+# data/audio/manifest.csv
+
 # NOTE: data/ is deliberately NOT ignored.
 # The Streamlit Cloud deployment reads data/processed/*.csv directly, so those
 # files have to be in the repo for the hosted app to start. They total about

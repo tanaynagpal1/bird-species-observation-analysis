@@ -38,6 +38,13 @@ st.set_page_config(
 st.markdown(theme.css(), unsafe_allow_html=True)
 
 # ------------------------------------------------------------------ 3. sidebar
+# Streamlit's automatic nav (position="sidebar") always renders in a fixed
+# slot, above anything st.sidebar adds - no amount of code reordering moves
+# it. To get Logo -> Nav -> Filters, we hide the automatic one
+# (position="hidden") and draw our own with st.page_link, placed exactly
+# where we want it. st.navigation still has to run so Streamlit knows the
+# page set and gives us `nav`, the currently-selected Page.
+
 # (file, title, material icon)  - order here is the order in the sidebar.
 PAGES = [
     ("views/overview.py",    "Overview",           ":material/home:"),
@@ -50,6 +57,7 @@ PAGES = [
     ("views/report.py",      "Report",             ":material/description:"),
     ("views/conclusion.py",  "Conclusion",         ":material/lightbulb:"),
     ("views/ask_ai.py",      "Ask AI",             ":material/smart_toy:"),
+    ("views/tryit.py",       "Try It Yourself",    ":material/science:"),
 ]
 
 pages = [
