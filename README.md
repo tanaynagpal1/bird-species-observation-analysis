@@ -28,9 +28,10 @@ The single most uncomfortable finding is this:
 
 ## Live demo
 
-**[→ Open the dashboard](https://YOUR-APP-NAME.streamlit.app)**
+**[→ Open the live dashboard](https://bird-species-observation-analysis-8rmnfhyn2fwiwas6hrfpwf.streamlit.app/)**
 
-*(Replace this link after deploying. See [Deployment](#deployment).)*
+No sign-in, no API key, nothing to install. The first load takes a few seconds
+while the container wakes up.
 
 ---
 
@@ -121,8 +122,8 @@ Each carries a verdict, because a negative result honestly reported is worth mor
 Requires Python 3.9+.
 
 ```bash
-git clone https://github.com/YOUR-USERNAME/bird-analysis.git
-cd bird-analysis
+git clone https://github.com/tanaynagpal1/bird-species-observation-analysis.git
+cd bird-species-observation-analysis
 
 python -m venv .venv
 .venv\Scripts\activate          # Windows
